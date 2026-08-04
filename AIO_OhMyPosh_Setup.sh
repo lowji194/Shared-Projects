@@ -22,6 +22,19 @@
 #     tu ~/.bashrc sang ~/.zshrc (va nguoc lai neu can), tranh phai
 #     copy tay moi khi cai them cong cu moi
 #
+# >>> BAN TOI UU TOC DO KHOI DONG (so voi ban goc) <<<
+#   - oh-my-posh init: KHONG con eval truc tiep output moi lan mo
+#     terminal. Thay vao do, output duoc CACHE ra file trong
+#     ~/.cache/oh-my-posh/ va chi regen khi doi theme hoac theme
+#     file thay doi. Lan mo terminal sau chi "source" file cache
+#     (khong spawn subprocess oh-my-posh nua) -> nhanh hon dang ke.
+#   - zoxide init: cung duoc cache tuong tu, chi regen khi binary
+#     zoxide duoc cap nhat.
+#   - zsh: dung "compinit -C" (bo qua kiem tra quyen fpath) neu
+#     dump file con moi trong 24h, giam thoi gian compinit.
+#   - Them lenh "profiletime" de tu do thoi gian khoi dong shell
+#     bat cu luc nao, va goi y lenh trace chi tiet tung dong.
+#
 # Yeu cau: Ubuntu/Debian, co quyen sudo, ket noi internet
 # Cach chay:
 #   chmod +x AIO_OhMyPosh_Setup.sh
@@ -74,6 +87,7 @@ fetch_latest_asset_url() {
 echo ""
 log_step "====================================================="
 log_step "   CAI DAT AIO - LAM DEP TERMINAL UBUNTU (Theme: Dracula)"
+log_step "   (Ban toi uu toc do khoi dong)"
 log_step "====================================================="
 echo ""
 
@@ -396,18 +410,6 @@ echo ""
 #  10. TAI TOAN BO BO THEME CHO OH MY POSH (khong chi Dracula)
 #     De co the dung lenh "theme <ten>" / "themes" doi qua lai
 #     giua cac theme MA KHONG CAN MANG sau khi da tai ve 1 lan.
-#
-#     >>> DA SUA LOI (so voi ban goc) <<<
-#     Loi cu: chi can >0 file .omp.json da co san la BO QUA tai lai,
-#     nen neu lan tai truoc bi dut/loi (chi giai nen duoc 1 file),
-#     script se KHONG BAO GIO tai lai nua, khien lenh "themes" chi
-#     hien mai 1 theme "dracula".
-#     Sua: (1) nang nguong kiem tra "da co du theme" len > 50 file
-#          (bo theme that co ~150+ theme); (2) kiem tra dung luong
-#          file zip tai ve truoc khi giai nen; (3) tu dong retry
-#          toi da 3 lan neu tai/giai nen loi; (4) sau khi giai nen
-#          xong, dem lai so theme thuc te va canh bao ro rang neu
-#          van thieu, thay vi am tham bo qua.
 # ============================================================
 
 log_info "[10/12] Dang tai toan bo bo theme cho Oh My Posh..."
@@ -494,6 +496,7 @@ echo ""
 # ============================================================
 #  11. CAU HINH FILE RC CHO CA ~/.bashrc VA ~/.zshrc
 #     (khong con phu thuoc vao shell hien tai nua)
+#     >>> DA TICH HOP CACHE OH-MY-POSH / ZOXIDE DE TOI UU TOC DO <<<
 # ============================================================
 
 MARKER_START="# >>> AIO OhMyPosh Setup >>>"
@@ -503,7 +506,7 @@ configure_rc_file() {
     local rc_file="$1"
     local shell_name="$2"   # "bash" hoac "zsh"
 
-    log_info "[11/12] Dang cau hinh $rc_file (shell: $shell_name, theme: Dracula)..."
+    log_info "[11/12] Dang cau hinh $rc_file (shell: $shell_name, theme: Dracula, co toi uu toc do)..."
 
     touch "$rc_file"
     local backup_path="${rc_file}.backup_$(date +%Y%m%d_%H%M%S)"
@@ -518,15 +521,16 @@ configure_rc_file() {
     cat >> "$rc_file" <<EOF
 $MARKER_START
 # ------------------------------------------------------------
-# Cau hinh tu dong boi AIO_OhMyPosh_Setup.sh
+# Cau hinh tu dong boi AIO_OhMyPosh_Setup.sh (ban toi uu toc do)
 # ------------------------------------------------------------
+
+# --- Do thoi gian khoi dong: bat dau ---
+__rc_start_time=\$(date +%s%N 2>/dev/null || echo 0)
 
 # --- PATH bo sung ---
 export PATH="\$HOME/.local/bin:\$PATH"
 
 # --- Oh My Posh: bien luu theme dang dung (mac dinh: dracula) ---
-# Luu ten theme vao 1 FILE TRANG THAI RIENG (khong dung sed sua truc tiep
-# vao file rc nua, vi sed qua nhieu lop escape qua heredoc rat de vo).
 export POSH_THEME_DIR="$THEME_DIR"
 POSH_THEME_STATE_FILE="\$HOME/.config/posh_current_theme"
 mkdir -p "\$(dirname "\$POSH_THEME_STATE_FILE")" 2>/dev/null
@@ -537,20 +541,45 @@ fi
 export POSH_CURRENT_THEME
 export POSH_THEME_STATE_FILE
 
-# --- Oh My Posh (theme prompt, uu tien load LOCAL theo POSH_CURRENT_THEME) ---
+# --- Oh My Posh (theme prompt) ---
+# TOI UU: khong con "eval "\$(oh-my-posh init ...)"" moi lan mo terminal
+# (spawn subprocess + eval rat ton thoi gian). Thay vao do, output duoc
+# CACHE ra file va chi source lai. Cache chi duoc SINH LAI khi:
+#   - chua ton tai cache, HOAC
+#   - file theme .omp.json moi hon file cache (tuc la vua doi theme
+#     hoac vua chay lai script cai dat)
+POSH_CACHE_DIR="\$HOME/.cache/oh-my-posh"
+mkdir -p "\$POSH_CACHE_DIR" 2>/dev/null
 if command -v oh-my-posh >/dev/null 2>&1; then
     __posh_theme_file="\$POSH_THEME_DIR/\${POSH_CURRENT_THEME}.omp.json"
+    __posh_cache_file="\$POSH_CACHE_DIR/init.${shell_name}.\${POSH_CURRENT_THEME}.sh"
+
     if [[ -f "\$__posh_theme_file" ]]; then
-        eval "\$(oh-my-posh init ${shell_name} --config "\$__posh_theme_file")"
+        if [[ ! -f "\$__posh_cache_file" ]] || [[ "\$__posh_theme_file" -nt "\$__posh_cache_file" ]]; then
+            oh-my-posh init "${shell_name}" --config "\$__posh_theme_file" > "\$__posh_cache_file" 2>/dev/null
+        fi
     else
-        eval "\$(oh-my-posh init ${shell_name} --config 'https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/dracula.omp.json')"
+        # Theme local khong ton tai (vi du lan dau chay, chua tai theme xong):
+        # fallback tai theme dracula tu xa, van cache lai nhu binh thuong.
+        if [[ ! -f "\$__posh_cache_file" ]]; then
+            oh-my-posh init "${shell_name}" --config 'https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/dracula.omp.json' > "\$__posh_cache_file" 2>/dev/null
+        fi
     fi
-    unset __posh_theme_file
+
+    [[ -s "\$__posh_cache_file" ]] && source "\$__posh_cache_file"
+    unset __posh_theme_file __posh_cache_file
 fi
 
 # --- zoxide (nhay thu muc thong minh: dung "z ten-thu-muc") ---
+# TOI UU: cache init script, chi regen khi binary zoxide duoc cap nhat
 if command -v zoxide >/dev/null 2>&1; then
-    eval "\$(zoxide init ${shell_name})"
+    __zoxide_cache="\$HOME/.cache/zoxide-init.${shell_name}.sh"
+    __zoxide_bin="\$(command -v zoxide)"
+    if [[ ! -f "\$__zoxide_cache" ]] || [[ "\$__zoxide_bin" -nt "\$__zoxide_cache" ]]; then
+        zoxide init "${shell_name}" > "\$__zoxide_cache" 2>/dev/null
+    fi
+    [[ -s "\$__zoxide_cache" ]] && source "\$__zoxide_cache"
+    unset __zoxide_cache __zoxide_bin
 fi
 
 # --- fzf (fuzzy finder: Ctrl+T tim file, Ctrl+R tim lich su lenh) ---
@@ -629,9 +658,13 @@ theme() {
     export POSH_CURRENT_THEME="\$name"
 
     # Luu lai vinh vien: ghi ten theme vao FILE TRANG THAI RIENG
-    # (don gian, khong dinh loi escape nhu cach dung sed sua truc tiep file rc)
     mkdir -p "\$(dirname "\$POSH_THEME_STATE_FILE")" 2>/dev/null
     echo "\$name" > "\$POSH_THEME_STATE_FILE" 2>/dev/null
+
+    # Sinh san cache cho theme moi ngay bay gio, de lan mo terminal
+    # tiep theo khong phai cho regen cache
+    mkdir -p "\$HOME/.cache/oh-my-posh" 2>/dev/null
+    oh-my-posh init "${shell_name}" --config "\$theme_file" > "\$HOME/.cache/oh-my-posh/init.${shell_name}.\${name}.sh" 2>/dev/null
 
     if [[ -s "\$POSH_THEME_STATE_FILE" ]] && [[ "\$(cat "\$POSH_THEME_STATE_FILE")" == "\$name" ]]; then
         echo "Da doi sang theme: \$name (da luu, lan sau mo terminal se tu dong dung theme nay)"
@@ -639,6 +672,13 @@ theme() {
         echo "Da doi theme cho phien nay, NHUNG luu that bai (khong ghi duoc vao \$POSH_THEME_STATE_FILE)."
         echo "Kiem tra quyen ghi thu muc \$(dirname "\$POSH_THEME_STATE_FILE")."
     fi
+}
+
+# Xoa toan bo cache oh-my-posh/zoxide, dung khi can ep regen lai tu dau
+# (vi du sau khi cap nhat oh-my-posh len phien ban moi)
+clearposhcache() {
+    rm -rf "\$HOME/.cache/oh-my-posh" "\$HOME/.cache/zoxide-init.${shell_name}.sh" 2>/dev/null
+    echo "Da xoa cache. Mo terminal moi de tu dong sinh lai."
 }
 
 # Tab-completion cho lenh "theme" (chi ap dung khi dang o bash)
@@ -662,6 +702,23 @@ if [[ -n "\${ZSH_VERSION:-}" ]]; then
     compdef _theme_zsh_completions theme 2>/dev/null
 fi
 
+# ------------------------------------------------------------
+#  LENH DO THOI GIAN KHOI DONG SHELL (profiletime)
+# ------------------------------------------------------------
+__rc_end_time=\$(date +%s%N 2>/dev/null || echo 0)
+if [[ "\$__rc_start_time" != "0" && "\$__rc_end_time" != "0" ]]; then
+    export __RC_LOAD_MS=\$(( (__rc_end_time - __rc_start_time) / 1000000 ))
+else
+    export __RC_LOAD_MS="?"
+fi
+unset __rc_start_time __rc_end_time
+
+profiletime() {
+    echo "Lan khoi dong rc gan nhat mat: \${__RC_LOAD_MS} ms"
+    echo "Do lai tong the (5 lan): for i in {1..5}; do time bash -i -c exit; done"
+    echo "Trace chi tiet tung dong: bash -x -i -c exit 2> /tmp/rc_trace.log && less /tmp/rc_trace.log"
+}
+
 $MARKER_END
 EOF
 
@@ -676,6 +733,29 @@ HAS_ZSH=0
 if command -v zsh >/dev/null 2>&1; then
     HAS_ZSH=1
     configure_rc_file "$HOME/.zshrc" "zsh"
+
+    # >>> TOI UU RIENG CHO ZSH: compinit nhanh <<<
+    # Chen doan nay vao DAU file .zshrc (truoc block AIO va truoc
+    # framework nao khac co the tu goi compinit), de tranh kiem tra
+    # quyen fpath moi lan mo shell (co the ton 100-300ms).
+    ZCOMPINIT_MARKER="# >>> AIO fast compinit >>>"
+    if ! grep -qF "$ZCOMPINIT_MARKER" "$HOME/.zshrc" 2>/dev/null; then
+        TMP_ZSHRC="$(mktemp)"
+        {
+            echo "$ZCOMPINIT_MARKER"
+            echo "autoload -Uz compinit"
+            echo "if [[ -n \"\$HOME/.zcompdump\"(#qN.mh+24) ]]; then"
+            echo "    compinit"
+            echo "else"
+            echo "    compinit -C"
+            echo "fi"
+            echo "# <<< AIO fast compinit <<<"
+            echo ""
+            cat "$HOME/.zshrc"
+        } > "$TMP_ZSHRC"
+        mv "$TMP_ZSHRC" "$HOME/.zshrc"
+        log_ok "Da them toi uu compinit vao dau ~/.zshrc."
+    fi
 else
     log_warn "      -> Chua phat hien zsh tren he thong nen tam thoi bo qua ~/.zshrc."
     log_warn "         Neu ban cai zsh sau nay, hay chay lai script nay de tu dong cau hinh ~/.zshrc."
@@ -685,15 +765,11 @@ echo ""
 # ============================================================
 #  12. DONG BO CAU HINH CONG CU (nvm/pyenv/sdkman/cargo/go/rbenv/...)
 #     GIUA ~/.bashrc VA ~/.zshrc
-#     - Chi dong bo cac dong NAM NGOAI block AIO ben tren (block do
-#       tool khac tu ghi vao, vi du nvm/pyenv installer).
-#     - Sao chep dong nao thieu ben kia, khong xoa/ghi de gi ca.
 # ============================================================
 
 log_info "[12/12] Dang dong bo cau hinh cong cu (nvm/pyenv/sdkman/cargo/go/rbenv...) giua bashrc va zshrc..."
 
 if [[ "$HAS_ZSH" -eq 1 ]]; then
-    # Cac pattern nhan dien dong cau hinh cua tool quen thuoc
     TOOL_PATTERN='NVM_DIR|pyenv|SDKMAN|\.cargo/env|/\.cargo/bin|GOPATH|/go/bin|rbenv|\.rbenv|goenv|\.goenv|conda\.sh|miniconda|anaconda'
 
     sync_tool_lines() {
@@ -703,8 +779,6 @@ if [[ "$HAS_ZSH" -eq 1 ]]; then
         [[ -f "$src" ]] || return 0
         touch "$dst"
 
-        # Lay noi dung NGOAI block AIO cua file nguon, loc dong khop pattern tool,
-        # bo dong trong/comment thuan tuy
         local src_lines
         src_lines="$(sed "/$MARKER_START/,/$MARKER_END/d" "$src" | grep -E "$TOOL_PATTERN" | grep -v '^[[:space:]]*#' | sed '/^[[:space:]]*$/d')"
 
@@ -772,4 +846,6 @@ echo -e "${WHITE}  - top          : mo trinh giam sat he thong bang btop${NC}"
 echo -e "${WHITE}  - lg           : mo lazygit (TUI quan ly Git) trong thu muc hien tai${NC}"
 echo -e "${WHITE}  - themes       : xem truoc TAT CA theme ngay trong terminal${NC}"
 echo -e "${WHITE}  - theme ten    : doi theme ngay lap tuc + tu luu lai (vi du: theme jandedobbeleer)${NC}"
+echo -e "${WHITE}  - profiletime  : xem lan khoi dong shell nay mat bao nhieu ms${NC}"
+echo -e "${WHITE}  - clearposhcache : xoa cache oh-my-posh/zoxide, ep sinh lai tu dau${NC}"
 echo ""
