@@ -4,19 +4,36 @@
     Script cai dat AIO (All-In-One) lam dep PowerShell 7 + Windows Terminal
 .DESCRIPTION
     Tu dong cai dat va cau hinh:
-    - Oh My Posh (theme prompt mac dinh: Dracula, load THEME LOCAL, khong can mang)
+    - Oh My Posh (theme prompt mac dinh: Dracula, load THEME LOCAL, khong can mang, tu co git segment)
     - Nerd Font (CascadiaCode)
     - PSReadLine (autocomplete + syntax highlight)
-    - Terminal-Icons (icon cho file/folder)
+    - Terminal-Icons (icon cho file/folder) - LAZY LOAD, chi load khi go ls/dir lan dau
     - zoxide (nhay thu muc thong minh)
-    - posh-git (trang thai Git tren prompt + tab-completion)
-    - PSFzf (fuzzy finder cho lich su lenh & file)
+    - PSFzf (fuzzy finder cho lich su lenh & file) - LAZY LOAD, chi load khi bam Ctrl+T/Ctrl+R lan dau
     - (Tuy chon) ImportExcel, Pester, PSScriptAnalyzer, SecretManagement, BurntToast
-    - File $PROFILE hoan chinh, kem lenh nhanh doi theme (theme / themes)
+    - File $PROFILE hoan chinh, kem lenh nhanh doi theme (theme / themes) va do thoi gian khoi dong (profiletime)
 .NOTES
     Chay script nay bang PowerShell 7 (pwsh.exe), voi quyen Administrator de winget hoat dong on dinh.
     Viet Boi Loi Nguyen - lowji194.github.io.vn
+
+    GHI CHU TOI UU TOC DO (so voi ban goc):
+    - Bo Import-Module posh-git mac dinh: cac theme Oh My Posh (bao gom Dracula) da co san
+      segment hien trang thai Git tren prompt, nen posh-git thuong la thua va la nguyen nhan
+      chinh gay cham 1-2 giay khi mo terminal. Neu ban van muon dung posh-git (vi du can
+      tab-completion cho lenh git), sua bien $EnablePoshGit ben duoi thanh $true.
+    - Terminal-Icons va PSFzf duoc lazy-load: module That su chi duoc Import-Module khi ban
+      goi lenh lien quan lan dau tien (ls/dir hoac Ctrl+T/Ctrl+R), thay vi load ngay khi mo
+      terminal moi.
+    - Them lenh "profiletime" de tu do thoi gian khoi dong profile bat cu luc nao.
 #>
+
+# ============================================================
+#  TUY CHINH NHANH (co the sua truoc khi chay)
+# ============================================================
+
+# Dat $true neu muon van Import-Module posh-git ngay khi mo terminal (se cham hon).
+# Mac dinh $false vi oh-my-posh da co segment git san.
+$EnablePoshGit = $false
 
 # ============================================================
 #  KIEM TRA MOI TRUONG
@@ -25,6 +42,7 @@
 Write-Host ""
 Write-Host "=====================================================" -ForegroundColor Cyan
 Write-Host "   CAI DAT AIO - LAM DEP POWERSHELL 7 (Theme: Dracula)" -ForegroundColor Cyan
+Write-Host "   (Ban toi uu toc do khoi dong)" -ForegroundColor Cyan
 Write-Host "=====================================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -176,7 +194,7 @@ Write-Host ""
 Write-Host "[4/8] Dang cai dat Terminal-Icons..." -ForegroundColor Green
 try {
     Install-Module -Name Terminal-Icons -Repository PSGallery -Force -Scope CurrentUser -ErrorAction Stop
-    Write-Host "      -> Hoan tat." -ForegroundColor DarkGreen
+    Write-Host "      -> Hoan tat. (Se duoc lazy-load, khong lam cham luc mo terminal)" -ForegroundColor DarkGreen
 } catch {
     Write-Host "      -> Loi khi cai Terminal-Icons: $_" -ForegroundColor Red
 }
@@ -202,14 +220,19 @@ Write-Host ""
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 
 # ============================================================
-#  6. CAI CAC MODULE KHUYEN NGHI (posh-git + PSFzf)
+#  6. CAI CAC MODULE KHUYEN NGHI (posh-git tuy chon + PSFzf)
 # ============================================================
 
-Write-Host "[6/8] Dang cai dat posh-git va PSFzf (fuzzy finder)..." -ForegroundColor Green
+Write-Host "[6/8] Dang cai dat posh-git (tuy chon) va PSFzf (fuzzy finder)..." -ForegroundColor Green
 
 try {
     Install-Module posh-git -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction Stop
-    Write-Host "      -> posh-git: Hoan tat." -ForegroundColor DarkGreen
+    if ($EnablePoshGit) {
+        Write-Host "      -> posh-git: Hoan tat (se duoc Import-Module ngay khi mo terminal)." -ForegroundColor DarkGreen
+    } else {
+        Write-Host "      -> posh-git: Da cai san nhung se KHONG tu dong load (dung git segment cua oh-my-posh thay the)." -ForegroundColor DarkGreen
+        Write-Host "         Neu muon bat lai, sua `$EnablePoshGit = `$true trong script nay va chay lai." -ForegroundColor DarkGray
+    }
 } catch {
     Write-Host "      -> Loi khi cai posh-git: $_" -ForegroundColor Red
 }
@@ -222,7 +245,7 @@ try {
     }
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
     Install-Module PSFzf -Scope CurrentUser -Force -SkipPublisherCheck -ErrorAction Stop
-    Write-Host "      -> PSFzf: Hoan tat." -ForegroundColor DarkGreen
+    Write-Host "      -> PSFzf: Hoan tat. (Se duoc lazy-load, khong lam cham luc mo terminal)" -ForegroundColor DarkGreen
 } catch {
     Write-Host "      -> Loi khi cai PSFzf: $_" -ForegroundColor Red
 }
@@ -267,10 +290,10 @@ if ($installExtra -eq "" -or $installExtra -match "^[Yy]") {
 Write-Host ""
 
 # ============================================================
-#  8. TAO FILE $PROFILE
+#  8. TAO FILE $PROFILE (BAN TOI UU TOC DO)
 # ============================================================
 
-Write-Host "[8/8] Dang cau hinh file profile PowerShell (theme: Dracula)..." -ForegroundColor Green
+Write-Host "[8/8] Dang cau hinh file profile PowerShell (theme: Dracula, toi uu toc do)..." -ForegroundColor Green
 
 $profileDir = Split-Path $PROFILE -Parent
 if (-not (Test-Path $profileDir)) {
@@ -283,35 +306,40 @@ if (Test-Path $PROFILE) {
     Write-Host "      -> Da sao luu profile cu vao: $backupPath" -ForegroundColor DarkGray
 }
 
-$profileContent = @'
+$enablePoshGitLiteral = if ($EnablePoshGit) { '$true' } else { '$false' }
+
+$profileContent = @"
 # ============================================================
-#  POWERSHELL PROFILE - AUTO GENERATED
+#  POWERSHELL PROFILE - AUTO GENERATED (Ban toi uu toc do khoi dong)
 # ============================================================
+
+# Do thoi gian khoi dong toan bo profile - go "profiletime" bat cu luc nao de xem lai
+`$__profileStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
 
 # --- Bien luu ten theme dang dung (mac dinh: dracula) ---
 if (-not (Test-Path Env:\POSH_CURRENT_THEME)) {
-    $env:POSH_CURRENT_THEME = "dracula"
+    `$env:POSH_CURRENT_THEME = "dracula"
 }
 
-# --- Oh My Posh (theme prompt, uu tien load LOCAL) ---
+# --- Oh My Posh (theme prompt, uu tien load LOCAL, da co san git segment) ---
 if (Get-Command oh-my-posh -ErrorAction SilentlyContinue) {
 
     # Neu POSH_THEMES_PATH chua duoc set trong session nay, thu tu suy ra tu duong dan cai dat mac dinh
-    if (-not $env:POSH_THEMES_PATH) {
-        $fallbackThemesPath = Join-Path $env:LOCALAPPDATA "Programs\oh-my-posh\themes"
-        if (Test-Path $fallbackThemesPath) {
-            $env:POSH_THEMES_PATH = $fallbackThemesPath
+    if (-not `$env:POSH_THEMES_PATH) {
+        `$fallbackThemesPath = Join-Path `$env:LOCALAPPDATA "Programs\oh-my-posh\themes"
+        if (Test-Path `$fallbackThemesPath) {
+            `$env:POSH_THEMES_PATH = `$fallbackThemesPath
         }
     }
 
-    $currentThemeFile = $null
-    if ($env:POSH_THEMES_PATH) {
-        $currentThemeFile = Join-Path $env:POSH_THEMES_PATH "$($env:POSH_CURRENT_THEME).omp.json"
+    `$currentThemeFile = `$null
+    if (`$env:POSH_THEMES_PATH) {
+        `$currentThemeFile = Join-Path `$env:POSH_THEMES_PATH "`$(`$env:POSH_CURRENT_THEME).omp.json"
     }
 
-    if ($currentThemeFile -and (Test-Path $currentThemeFile)) {
+    if (`$currentThemeFile -and (Test-Path `$currentThemeFile)) {
         # Load theme LOCAL - khong can mang, nhanh hon
-        oh-my-posh init pwsh --config $currentThemeFile | Invoke-Expression
+        oh-my-posh init pwsh --config `$currentThemeFile | Invoke-Expression
     } else {
         # Fallback: chi tai qua mang neu khong tim thay theme local
         oh-my-posh init pwsh --config "https://raw.githubusercontent.com/JanDeDobbeleer/oh-my-posh/main/themes/dracula.omp.json" | Invoke-Expression
@@ -334,20 +362,40 @@ if (Get-Module -ListAvailable -Name PSReadLine) {
     Set-PSReadLineKeyHandler -Key Tab -Function MenuComplete
 }
 
-# --- Terminal-Icons (icon file/folder) ---
-if (Get-Module -ListAvailable -Name Terminal-Icons) {
-    Import-Module Terminal-Icons
-}
-
-# --- posh-git (trang thai Git tren prompt + tab-completion cho git) ---
-if (Get-Module -ListAvailable -Name posh-git) {
+# --- posh-git (TUY CHON - mac dinh TAT vi oh-my-posh da co git segment san) ---
+`$EnablePoshGit = $enablePoshGitLiteral
+if (`$EnablePoshGit -and (Get-Module -ListAvailable -Name posh-git)) {
     Import-Module posh-git
 }
 
-# --- PSFzf (fuzzy finder: Ctrl+T tim file, Ctrl+R tim lich su lenh) ---
+# --- Terminal-Icons: LAZY LOAD, chi Import-Module khi go ls/dir lan dau ---
+if (Get-Module -ListAvailable -Name Terminal-Icons) {
+    function global:Enable-TerminalIconsOnce {
+        Remove-Item Function:\ls -ErrorAction SilentlyContinue
+        Remove-Item Function:\dir -ErrorAction SilentlyContinue
+        Import-Module Terminal-Icons
+    }
+    function global:ls { Enable-TerminalIconsOnce; Get-ChildItem @args }
+    function global:dir { Enable-TerminalIconsOnce; Get-ChildItem @args }
+}
+
+# --- PSFzf: LAZY LOAD, chi Import-Module khi bam Ctrl+T hoac Ctrl+R lan dau ---
 if (Get-Module -ListAvailable -Name PSFzf) {
-    Import-Module PSFzf
-    Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
+    function global:Enable-PSFzfOnce {
+        Import-Module PSFzf
+        Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t' -PSReadlineChordReverseHistory 'Ctrl+r'
+    }
+    Set-PSReadLineKeyHandler -Key 'Ctrl+t' -ScriptBlock {
+        Enable-PSFzfOnce
+        [Microsoft.PowerShell.PSConsoleReadLine]::Insert('')
+        [Microsoft.PowerShell.PSConsoleReadLine]::Backward('Char')
+        # Sau lan dau, phim Ctrl+T da duoc PSFzf tiep quan lai tu day
+        Invoke-PsFzfRipgrepFileWidget 2>`$null
+    }
+    Set-PSReadLineKeyHandler -Key 'Ctrl+r' -ScriptBlock {
+        Enable-PSFzfOnce
+        Invoke-FuzzyHistory 2>`$null
+    }
 }
 
 # --- zoxide (nhay thu muc thong minh: dung "z ten-thu-muc") ---
@@ -356,7 +404,6 @@ if (Get-Command zoxide -ErrorAction SilentlyContinue) {
 }
 
 # --- Alias tien ich ---
-Set-Alias ll Get-ChildItem
 function .. { Set-Location .. }
 function ... { Set-Location ..\.. }
 
@@ -366,55 +413,55 @@ function ... { Set-Location ..\.. }
 
 # Liet ke danh sach ten theme dang co (khong preview, chi liet ke nhanh)
 function Get-ThemeList {
-    if (-not $env:POSH_THEMES_PATH -or -not (Test-Path $env:POSH_THEMES_PATH)) {
+    if (-not `$env:POSH_THEMES_PATH -or -not (Test-Path `$env:POSH_THEMES_PATH)) {
         Write-Host "Khong tim thay thu muc theme. Kiem tra bien POSH_THEMES_PATH." -ForegroundColor Red
         return
     }
-    Get-ChildItem -Path $env:POSH_THEMES_PATH -Filter '*.omp.json' |
+    Get-ChildItem -Path `$env:POSH_THEMES_PATH -Filter '*.omp.json' |
         Sort-Object BaseName |
-        ForEach-Object { ($_.BaseName -replace '\.omp$', '') }
+        ForEach-Object { (`$_.BaseName -replace '\.omp`$', '') }
 }
 
 # Xem truoc TAT CA theme ngay trong terminal (in mau thuc te tung theme)
 function Show-Themes {
-    if (-not $env:POSH_THEMES_PATH -or -not (Test-Path $env:POSH_THEMES_PATH)) {
+    if (-not `$env:POSH_THEMES_PATH -or -not (Test-Path `$env:POSH_THEMES_PATH)) {
         Write-Host "Khong tim thay thu muc theme. Kiem tra bien POSH_THEMES_PATH." -ForegroundColor Red
         return
     }
-    Get-ChildItem -Path $env:POSH_THEMES_PATH -Filter '*.omp.json' | Sort-Object BaseName | ForEach-Object {
-        Write-Host "`n$($_.BaseName -replace '\.omp$','')" -ForegroundColor Cyan
-        oh-my-posh print primary --config $_.FullName
+    Get-ChildItem -Path `$env:POSH_THEMES_PATH -Filter '*.omp.json' | Sort-Object BaseName | ForEach-Object {
+        Write-Host "``n`$(`$_.BaseName -replace '\.omp`$','')" -ForegroundColor Cyan
+        oh-my-posh print primary --config `$_.FullName
     }
-    Write-Host "`nDung lenh: theme <ten-theme>  de doi theme (vi du: theme jandedobbeleer)" -ForegroundColor DarkGray
+    Write-Host "``nDung lenh: theme <ten-theme>  de doi theme (vi du: theme jandedobbeleer)" -ForegroundColor DarkGray
 }
 
 # Doi theme ngay lap tuc + luu lai vinh vien cho lan mo terminal sau
 function Set-PoshThemeQuick {
     param(
-        [Parameter(Mandatory = $true, Position = 0)]
-        [string]$Name
+        [Parameter(Mandatory = `$true, Position = 0)]
+        [string]`$Name
     )
 
-    if (-not $env:POSH_THEMES_PATH -or -not (Test-Path $env:POSH_THEMES_PATH)) {
+    if (-not `$env:POSH_THEMES_PATH -or -not (Test-Path `$env:POSH_THEMES_PATH)) {
         Write-Host "Khong tim thay thu muc theme. Kiem tra bien POSH_THEMES_PATH." -ForegroundColor Red
         return
     }
 
-    $themeFile = Join-Path $env:POSH_THEMES_PATH "$Name.omp.json"
-    if (-not (Test-Path $themeFile)) {
-        Write-Host "Khong tim thay theme '$Name'." -ForegroundColor Red
+    `$themeFile = Join-Path `$env:POSH_THEMES_PATH "`$Name.omp.json"
+    if (-not (Test-Path `$themeFile)) {
+        Write-Host "Khong tim thay theme '`$Name'." -ForegroundColor Red
         Write-Host "Go 'themes' de xem danh sach va preview cac theme dang co." -ForegroundColor Yellow
         return
     }
 
     # Ap dung ngay cho session hien tai
-    oh-my-posh init pwsh --config $themeFile | Invoke-Expression
-    $env:POSH_CURRENT_THEME = $Name
+    oh-my-posh init pwsh --config `$themeFile | Invoke-Expression
+    `$env:POSH_CURRENT_THEME = `$Name
 
     # Luu lai vinh vien (bien User) de lan sau mo terminal tu dong dung theme nay
-    [Environment]::SetEnvironmentVariable("POSH_CURRENT_THEME", $Name, "User")
+    [Environment]::SetEnvironmentVariable("POSH_CURRENT_THEME", `$Name, "User")
 
-    Write-Host "Da doi sang theme: $Name (da luu, lan sau mo terminal se tu dong dung theme nay)" -ForegroundColor Green
+    Write-Host "Da doi sang theme: `$Name (da luu, lan sau mo terminal se tu dong dung theme nay)" -ForegroundColor Green
 }
 
 # Alias ngan gon
@@ -423,17 +470,28 @@ Set-Alias themes Show-Themes
 
 # Tab-completion cho lenh "theme": go "theme " roi nhan Tab de goi y ten theme
 Register-ArgumentCompleter -CommandName Set-PoshThemeQuick -ParameterName Name -ScriptBlock {
-    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
-    if ($env:POSH_THEMES_PATH -and (Test-Path $env:POSH_THEMES_PATH)) {
-        Get-ChildItem -Path $env:POSH_THEMES_PATH -Filter "$wordToComplete*.omp.json" |
-            ForEach-Object { ($_.BaseName -replace '\.omp$', '') } |
+    param(`$commandName, `$parameterName, `$wordToComplete, `$commandAst, `$fakeBoundParameters)
+    if (`$env:POSH_THEMES_PATH -and (Test-Path `$env:POSH_THEMES_PATH)) {
+        Get-ChildItem -Path `$env:POSH_THEMES_PATH -Filter "`$wordToComplete*.omp.json" |
+            ForEach-Object { (`$_.BaseName -replace '\.omp`$', '') } |
             Sort-Object |
-            ForEach-Object { [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_) }
+            ForEach-Object { [System.Management.Automation.CompletionResult]::new(`$_, `$_, 'ParameterValue', `$_) }
     }
 }
 
-Write-Host "Viet Boi Loi Nguyen - lowji194.github.io.vn" -ForegroundColor DarkGray
-'@
+# ============================================================
+#  LENH DO THOI GIAN KHOI DONG PROFILE
+# ============================================================
+function Show-ProfileLoadTime {
+    Write-Host "Lan khoi dong profile gan nhat mat: `$(`$__profileStopwatch.ElapsedMilliseconds) ms" -ForegroundColor Magenta
+    Write-Host "Neu muon do lai tu dau, chay: Measure-Command { . `$PROFILE }" -ForegroundColor DarkGray
+}
+Set-Alias profiletime Show-ProfileLoadTime
+
+`$__profileStopwatch.Stop()
+
+Write-Host "Viet Boi Loi Nguyen - lowji194.github.io.vn (profile: `$(`$__profileStopwatch.ElapsedMilliseconds) ms)" -ForegroundColor DarkGray
+"@
 
 Set-Content -Path $PROFILE -Value $profileContent -Encoding UTF8
 
@@ -454,10 +512,16 @@ Write-Host "  2. Mo Windows Terminal > Settings > Profile PowerShell > Appearanc
 Write-Host "     -> Doi Font face thanh: CaskaydiaCove Nerd Font" -ForegroundColor White
 Write-Host ""
 Write-Host "GOI Y SU DUNG NHANH:" -ForegroundColor Yellow
-Write-Host "  - Ctrl+R          : tim lich su lenh bang fuzzy search (PSFzf)" -ForegroundColor White
-Write-Host "  - Ctrl+T          : tim file bang fuzzy search (PSFzf)" -ForegroundColor White
+Write-Host "  - Ctrl+R          : tim lich su lenh bang fuzzy search (PSFzf, lazy-load lan dau)" -ForegroundColor White
+Write-Host "  - Ctrl+T          : tim file bang fuzzy search (PSFzf, lazy-load lan dau)" -ForegroundColor White
 Write-Host "  - z ten-thu-muc   : nhay nhanh toi thu muc da tung vao (zoxide)" -ForegroundColor White
 Write-Host "  - themes          : xem truoc TAT CA theme ngay trong terminal" -ForegroundColor White
 Write-Host "  - theme <ten>     : doi theme ngay lap tuc + tu luu lai (vi du: theme jandedobbeleer)" -ForegroundColor White
 Write-Host "                      Go 'theme ' roi nhan Tab de tab-completion goi y ten theme" -ForegroundColor White
+Write-Host "  - profiletime     : xem profile lan nay mat bao nhieu ms de khoi dong" -ForegroundColor White
+Write-Host ""
+Write-Host "GHI CHU TOC DO:" -ForegroundColor Yellow
+Write-Host "  - posh-git mac dinh KHONG tu load (dung git segment cua oh-my-posh)." -ForegroundColor White
+Write-Host "  - Terminal-Icons va PSFzf duoc lazy-load, chi Import-Module khi thuc su dung." -ForegroundColor White
+Write-Host "  - Neu van con cham, chay: Measure-Command { . `$PROFILE }  de xem con dong nao nang." -ForegroundColor White
 Write-Host ""
