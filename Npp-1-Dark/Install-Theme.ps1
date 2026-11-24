@@ -1,8 +1,8 @@
 # Đường dẫn tải các file theme và syntax highlight
-$themeUrl     = "https://raw.githubusercontent.com/lowji194/Npp-1-Dark/refs/heads/main/Npp-1-Dark.xml"
-$sassUrl      = "https://raw.githubusercontent.com/lowji194/Npp-1-Dark/refs/heads/main/Npp-1-Dark-Sass.xml"
-$mikthemeUrl  = "https://raw.githubusercontent.com/lowji194/Npp-1-Dark/refs/heads/main/MikroTikScript.xml"
-$darttheme    = "https://raw.githubusercontent.com/lowji194/Npp-1-Dark/refs/heads/main/Dart_DarkModeDefault.xml"
+$themeUrl     = "https://raw.githubusercontent.com/lowji194/Shared-Projects/main/Npp-1-Dark/Npp-1-Dark.xml"
+$sassUrl      = "https://raw.githubusercontent.com/lowji194/Shared-Projects/main/Npp-1-Dark/Npp-1-Dark-Sass.xml"
+$mikthemeUrl  = "https://raw.githubusercontent.com/lowji194/Shared-Projects/main/Npp-1-Dark/MikroTikScript.xml"
+$darttheme    = "https://raw.githubusercontent.com/lowji194/Shared-Projects/main/Npp-1-Dark/Dart_DarkModeDefault.xml"
 
 # Đường dẫn lưu file theme và syntax
 $themePath    = "$env:APPDATA\Notepad++\themes\Npp-1-Dark.xml"

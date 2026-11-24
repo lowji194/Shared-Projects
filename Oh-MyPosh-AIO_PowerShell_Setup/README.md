@@ -15,7 +15,7 @@ Hỗ trợ:
 Mở **PowerShell 7 (pwsh)** với quyền **Administrator**, chạy:
 
 ```powershell
-irm https://raw.githubusercontent.com/lowji194/Oh-MyPosh-AIO_PowerShell_Setup/main/AIO_PowerShell_Setup.ps1 | iex
+irm https://raw.githubusercontent.com/lowji194/Shared-Projects/main/Oh-MyPosh-AIO_PowerShell_Setup/AIO_PowerShell_Setup.ps1 | iex
 ```
 
 > `irm` (Invoke-RestMethod) tải nội dung script trực tiếp từ GitHub, `iex` (Invoke-Expression) chạy luôn — không cần clone repo hay lưu file `.ps1` xuống máy.
@@ -55,8 +55,8 @@ rồi mở lại terminal bằng `pwsh` và chạy lệnh cài ở trên.
 ### Cài đặt thủ công (tùy chọn)
 
 ```powershell
-git clone https://github.com/lowji194/Oh-MyPosh-AIO_PowerShell_Setup.git
-cd Oh-MyPosh-AIO_PowerShell_Setup
+git clone https://github.com/lowji194/Shared-Projects.git
+cd Shared-Projects/Oh-MyPosh-AIO_PowerShell_Setup
 ./AIO_PowerShell_Setup.ps1
 ```
 
@@ -69,7 +69,7 @@ cd Oh-MyPosh-AIO_PowerShell_Setup
 Mở terminal, chạy:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/lowji194/Oh-MyPosh-AIO_PowerShell_Setup/main/AIO_OhMyPosh_Setup.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/lowji194/Shared-Projects/main/Oh-MyPosh-AIO_PowerShell_Setup/AIO_OhMyPosh_Setup.sh)
 ```
 
 > Script cần quyền `sudo` để cài một số gói hệ thống (`curl`, `unzip`, `fontconfig`, `eza`, `bat`), sẽ được hỏi mật khẩu khi cần.
@@ -106,8 +106,8 @@ bash <(curl -fsSL https://raw.githubusercontent.com/lowji194/Oh-MyPosh-AIO_Power
 ### Cài đặt thủ công (tùy chọn)
 
 ```bash
-git clone https://github.com/lowji194/Oh-MyPosh-AIO_PowerShell_Setup.git
-cd Oh-MyPosh-AIO_PowerShell_Setup
+git clone https://github.com/lowji194/Shared-Projects.git
+cd Shared-Projects/Oh-MyPosh-AIO_PowerShell_Setup
 chmod +x AIO_OhMyPosh_Setup.sh
 ./AIO_OhMyPosh_Setup.sh
 ```

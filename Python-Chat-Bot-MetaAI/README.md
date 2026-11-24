@@ -8,8 +8,8 @@ Một chatbot dựa trên Python tương tác với API của Meta AI để gử
 
 1. **Clone repository:**
    ```sh
-   git clone https://github.com/lowji194/Python-Chat-Bot-MetaAI.git
-   cd Python-Chat-Bot-MetaAI
+   git clone https://github.com/lowji194/Shared-Projects.git
+   cd Shared-Projects/Python-Chat-Bot-MetaAI
    ```
 
 2. **Cài đặt các thư viện cần thiết:**

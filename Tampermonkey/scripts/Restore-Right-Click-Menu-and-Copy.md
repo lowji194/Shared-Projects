@@ -18,23 +18,23 @@ Nếu bạn chưa cài đặt **Tampermonkey**, làm theo các bước sau:
   
    Script:
    ```javascript
-  	// ==UserScript==
-  	// @name         Restore Text Selection
-  	// @namespace    https://theloi.io.vn/
-  	// @version      1.1
-  	// @description  Khôi phục chức năng bôi đen, chuột phải, sao chép và DevTools bị chặn trên các trang web với menu tùy chỉnh
-  	// @author       Lợi Nguyễn
-  	// @copyright    © 2025 Lợi Nguyễn. All rights reserved. Do not modify or remove author information.
-  	// @match        *://*/*
-  	// @grant        GM_setValue
-  	// @grant        GM_getValue
-  	// @grant        GM_registerMenuCommand
-  	// @require      https://raw.githubusercontent.com/lowji194/Tampermonkey/refs/heads/main/scripts/Restore-Right-Click-Menu-and-Copy.js
-  	// @require      https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js
-  	// @resource     sweetalert2_css https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css
-  	// @updateURL    https://raw.githubusercontent.com/lowji194/Tampermonkey/refs/heads/main/scripts/Restore-Right-Click-Menu-and-Copy.js
-  	// @downloadURL  https://raw.githubusercontent.com/lowji194/Tampermonkey/refs/heads/main/scripts/Restore-Right-Click-Menu-and-Copy.js
-  	// ==/UserScript==
+    // ==UserScript==
+    // @name         Restore Text Selection
+    // @namespace    https://theloi.io.vn/
+    // @version      1.1
+    // @description  Khôi phục chức năng bôi đen, chuột phải, sao chép và DevTools bị chặn trên các trang web với menu tùy chỉnh
+    // @author       Lợi Nguyễn
+    // @copyright    © 2025 Lợi Nguyễn. All rights reserved. Do not modify or remove author information.
+    // @match        *://*/*
+    // @grant        GM_setValue
+    // @grant        GM_getValue
+    // @grant        GM_registerMenuCommand
+    // @require      https://raw.githubusercontent.com/lowji194/Shared-Projects/main/Tampermonkey/scripts/Restore-Right-Click-Menu-and-Copy.js
+    // @require      https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js
+    // @resource     sweetalert2_css https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css
+    // @updateURL    https://raw.githubusercontent.com/lowji194/Shared-Projects/main/Tampermonkey/scripts/Restore-Right-Click-Menu-and-Copy.js
+    // @downloadURL  https://raw.githubusercontent.com/lowji194/Shared-Projects/main/Tampermonkey/scripts/Restore-Right-Click-Menu-and-Copy.js
+    // ==/UserScript==
    ```
 3. **Nhập Script**:
    - Dán mã script vào, bạn nhấn **File > Save** hoặc nhấn **Ctrl + S** để lưu.

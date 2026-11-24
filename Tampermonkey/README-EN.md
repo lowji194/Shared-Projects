@@ -25,7 +25,7 @@ If you don't have **Tampermonkey** installed, follow these steps:
 
 2. **Edit Script**:
 - Delete the default content in the editor window.
-- Copy the Raw Link of the Script on Github for example: https://raw.githubusercontent.com/lowji194/Tampermonkey/refs/heads/main/Restore-Right-Click-Menu-and-Copy.js
+- Copy the Raw Link of the Script on Github for example: https://raw.githubusercontent.com/lowji194/Shared-Projects/main/Tampermonkey/scripts/Restore-Right-Click-Menu-and-Copy.js
 
 - Edit the script according to the sample below:
 

@@ -27,6 +27,6 @@ PowerShell has a security policy that prevents scripts downloaded from the inter
 Run the following command in PowerShell (in Administrator mode):
 
 ```powershell
-Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/lowji194/Npp-1-Dark/refs/heads/main/Install-Theme.ps1").Content
+Invoke-Expression (Invoke-WebRequest -Uri "https://raw.githubusercontent.com/lowji194/Shared-Projects/main/Npp-1-Dark/Install-Theme.ps1").Content
 ```
 ![Project Image](Screenshot/Npp-1-Dark-Ss.png)
